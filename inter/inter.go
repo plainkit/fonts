@@ -75,7 +75,7 @@ func Preload(href string, extras ...html.LinkArg) html.LinkComponent {
 
 // PreloadVariant emits a preload <link> element for a specific variant if it is
 // registered. The second return value reports whether a link was produced.
-func PreloadVariant(v Variant, prefix string, extras ...html.LinkArg) (html.Component, bool) {
+func PreloadVariant(v Variant, prefix string, extras ...html.LinkArg) (html.HeadArg, bool) {
 	href, ok := hrefFor(prefix, v)
 	if !ok {
 		return nil, false
@@ -87,14 +87,14 @@ func PreloadVariant(v Variant, prefix string, extras ...html.LinkArg) (html.Comp
 // variants. If no variants are supplied, Regular, Italic, Bold, and BoldItalic
 // are used. Only variants that have been registered via subpackage imports are
 // emitted. Regular is preloaded when present.
-func HeadComponents(prefix string, variants ...Variant) []html.Component {
+func HeadComponents(prefix string, variants ...Variant) []html.HeadArg {
 	if len(variants) == 0 {
 		variants = defaultVariants
 	}
 
 	prefix = strings.TrimSuffix(prefix, "/")
 
-	components := make([]html.Component, 0, len(variants)+1)
+	components := make([]html.HeadArg, 0, len(variants)+1)
 
 	if containsVariant(variants, Regular) {
 		if preload, ok := PreloadVariant(Regular, prefix, fonts.FetchPriority("high")); ok {
@@ -111,7 +111,7 @@ func HeadComponents(prefix string, variants ...Variant) []html.Component {
 	return components
 }
 
-func fontFaceStyle(prefix string, v Variant) (html.Component, bool) {
+func fontFaceStyle(prefix string, v Variant) (html.HeadArg, bool) {
 	a, ok := assets.Get(string(v))
 	if !ok {
 		return nil, false

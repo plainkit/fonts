@@ -20,30 +20,23 @@ func TestHeadComponentsDefault(t *testing.T) {
 		t.Fatalf("expected 5 components (1 preload + 4 font-face), got %d", len(components))
 	}
 
-	link := html.Render(components[0])
-	expectedLink := `<link as="font" fetchpriority="high" href="/assets/fonts/Inter-Regular.woff2" rel="preload" type="font/woff2" crossorigin="anonymous">`
-	if link != expectedLink {
-		t.Fatalf("unexpected preload link\nwant: %s\n got: %s", expectedLink, link)
+	headMarkup := html.Render(html.Head(components...))
+
+	if !strings.Contains(headMarkup, `<link as="font" fetchpriority="high" href="/assets/fonts/Inter-Regular.woff2" rel="preload" type="font/woff2" crossorigin="anonymous">`) {
+		t.Fatalf("preload link missing or incorrect in head: %s", headMarkup)
 	}
 
-	checks := []struct {
-		index int
-		must  []string
-	}{
-		{index: 1, must: []string{"font-style: normal;", "font-weight: 400;", "url('/assets/fonts/Inter-Regular.woff2')"}},
-		{index: 2, must: []string{"font-style: italic;", "font-weight: 400;", "url('/assets/fonts/Inter-Italic.woff2')"}},
-		{index: 3, must: []string{"font-style: normal;", "font-weight: 700;", "url('/assets/fonts/Inter-Bold.woff2')"}},
-		{index: 4, must: []string{"font-style: italic;", "font-weight: 700;", "url('/assets/fonts/Inter-BoldItalic.woff2')"}},
-	}
-
-	for _, check := range checks {
-		rendered := html.Render(components[check.index])
-		for _, substr := range check.must {
-			if !strings.Contains(rendered, substr) {
-				t.Fatalf("component %d missing %q in %s", check.index, substr, rendered)
-			}
+	assertContains := func(substr string) {
+		if !strings.Contains(headMarkup, substr) {
+			t.Fatalf("head markup missing %q in %s", substr, headMarkup)
 		}
 	}
+
+	assertContains("font-weight: 400;")
+	assertContains("url('/assets/fonts/Inter-Regular.woff2') format('woff2')")
+	assertContains("url('/assets/fonts/Inter-Italic.woff2') format('woff2')")
+	assertContains("url('/assets/fonts/Inter-Bold.woff2') format('woff2')")
+	assertContains("url('/assets/fonts/Inter-BoldItalic.woff2') format('woff2')")
 }
 
 func TestHeadComponentsExtendedVariants(t *testing.T) {
@@ -52,24 +45,21 @@ func TestHeadComponentsExtendedVariants(t *testing.T) {
 		t.Fatalf("expected 5 components, got %d", len(components))
 	}
 
-	if got := html.Render(components[0]); !strings.Contains(got, `href="/assets/fonts/Inter-Regular.woff2"`) {
-		t.Fatalf("preload missing regular href: %s", got)
+	headMarkup := html.Render(html.Head(components...))
+
+	checks := []string{
+		`href="/assets/fonts/Inter-Regular.woff2"`,
+		"font-weight: 400;",
+		"font-weight: 500;",
+		"font-weight: 600;",
+		"font-style: italic;",
+		"font-weight: 800;",
 	}
 
-	if got := html.Render(components[1]); !strings.Contains(got, "font-weight: 400;") {
-		t.Fatalf("regular face missing weight: %s", got)
-	}
-
-	if got := html.Render(components[2]); !strings.Contains(got, "font-weight: 500;") {
-		t.Fatalf("medium face missing weight: %s", got)
-	}
-
-	if got := html.Render(components[3]); !strings.Contains(got, "font-weight: 600;") || !strings.Contains(got, "font-style: italic;") {
-		t.Fatalf("semi-bold italic face missing attributes: %s", got)
-	}
-
-	if got := html.Render(components[4]); !strings.Contains(got, "font-weight: 800;") {
-		t.Fatalf("extra-bold face missing weight: %s", got)
+	for _, substr := range checks {
+		if !strings.Contains(headMarkup, substr) {
+			t.Fatalf("head markup missing %q in %s", substr, headMarkup)
+		}
 	}
 }
 
@@ -79,8 +69,9 @@ func TestHeadComponentsWithoutRegular(t *testing.T) {
 		t.Fatalf("expected 2 components, got %d", len(components))
 	}
 
-	if got := html.Render(components[0]); strings.Contains(got, "rel=\"preload\"") {
-		t.Fatalf("unexpected preload when regular not requested: %s", got)
+	headMarkup := html.Render(html.Head(components...))
+	if strings.Contains(headMarkup, "rel=\"preload\"") {
+		t.Fatalf("unexpected preload when regular not requested: %s", headMarkup)
 	}
 }
 

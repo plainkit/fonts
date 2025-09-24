@@ -1,8 +1,10 @@
 package extrabold
 
-import _ "embed"
+import (
+	_ "embed"
 
-import "github.com/plainkit/fonts/inter/assets"
+	"github.com/plainkit/fonts/inter/assets"
+)
 
 //go:embed Inter-ExtraBold.woff2
 var data []byte

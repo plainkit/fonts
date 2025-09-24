@@ -1,8 +1,10 @@
 package regular
 
-import _ "embed"
+import (
+	_ "embed"
 
-import "github.com/plainkit/fonts/inter/assets"
+	"github.com/plainkit/fonts/inter/assets"
+)
 
 //go:embed Inter-Regular.woff2
 var data []byte
