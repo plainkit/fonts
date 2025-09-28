@@ -69,7 +69,7 @@ func File(v Variant) (string, bool) {
 
 // Preload emits a preload <link> for the given href. Variants must be
 // registered separately; this helper simply applies sensible defaults.
-func Preload(href string, extras ...html.LinkArg) html.LinkComponent {
+func Preload(href string, extras ...html.LinkArg) html.Node {
 	return fonts.Preload(href, extras...)
 }
 
@@ -87,28 +87,28 @@ func PreloadVariant(v Variant, prefix string, extras ...html.LinkArg) (html.Head
 // variants. If no variants are supplied, Regular, Italic, Bold, and BoldItalic
 // are used. Only variants that have been registered via subpackage imports are
 // emitted. Regular is preloaded when present.
-func HeadComponents(prefix string, variants ...Variant) []html.HeadArg {
+func HeadComponents(prefix string, variants ...Variant) html.ChildOpt {
 	if len(variants) == 0 {
 		variants = defaultVariants
 	}
 
 	prefix = strings.TrimSuffix(prefix, "/")
 
-	components := make([]html.HeadArg, 0, len(variants)+1)
+	components := make([]html.Component, 0, len(variants)+1)
 
 	if containsVariant(variants, Regular) {
 		if preload, ok := PreloadVariant(Regular, prefix, fonts.FetchPriority("high")); ok {
-			components = append(components, preload)
+			components = append(components, preload.(html.Component))
 		}
 	}
 
 	for _, v := range variants {
 		if style, ok := fontFaceStyle(prefix, v); ok {
-			components = append(components, style)
+			components = append(components, style.(html.Component))
 		}
 	}
 
-	return components
+	return html.F(components...)
 }
 
 func fontFaceStyle(prefix string, v Variant) (html.HeadArg, bool) {
@@ -128,7 +128,7 @@ func fontFaceStyle(prefix string, v Variant) (html.HeadArg, bool) {
 }
 `
 
-	return html.HeadStyle(html.UnsafeText(css)), true
+	return html.Style(html.UnsafeText(css)), true
 }
 
 func containsVariant(list []Variant, v Variant) bool {

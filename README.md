@@ -12,12 +12,14 @@ go get github.com/plainkit/fonts
 ## Available Fonts
 
 ### Inter
+
 - Variants: regular, italic, medium, medium italic, semibold, semibold italic, bold, bold italic, extra bold, extra bold italic (all WOFF2)
 - Variant modules live under `github.com/plainkit/fonts/inter/assets/...` – import only the weights you need to keep binaries small
 - Convenience sets:
   - `_ "github.com/plainkit/fonts/inter/basic"` registers regular, italic, bold, bold italic
   - `_ "github.com/plainkit/fonts/inter/all"` registers every shipped variant
 - `inter.HeadComponents(prefix, variants...)` – emit preload + `@font-face` blocks for registered variants
+- `inter.HeadGroup(prefix, variants...)` – wrap those entries so they can be passed as a single argument to PlainKit's Head
 - `inter.PreloadVariant(variant, prefix)` returns `(html.Component, bool)` so you can append the link only when the variant is available; `inter.Preload(href)` is a convenience wrapper when you already know the URL
 - `inter.Bytes(variant)` – embedded font bytes for serving
 - `inter.StaticHandler()` / `inter.RegisterStatic(mux, prefix)` – serve registered assets
